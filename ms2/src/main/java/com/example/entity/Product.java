@@ -11,7 +11,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -27,16 +26,16 @@ public class Product {
 
     @Id
     private String prodId;
-    
+
     @Column
     private String prodName;
-    
+
     @Column
     private String description;
-    
+
     @Column
     private double price;
-    
+
     @Column
     private String category;
 
@@ -45,7 +44,7 @@ public class Product {
 
     @UpdateTimestamp
     private Date updatedAt;
-    
+
     @Column
     private String shopkeeperId;
 }

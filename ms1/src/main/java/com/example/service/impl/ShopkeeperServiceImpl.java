@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,11 +15,9 @@ import com.example.dto.ProductResponse;
 import com.example.dto.ShopKeeperDto;
 import com.example.entity.ShopKeeper;
 import com.example.exceptions.ShopKeeperNotFoundException;
+import com.example.feignClients.ProductClient;
 import com.example.repository.ShopKeeperRepository;
 import com.example.service.ShopkeeperService;
-
-import reactor.core.Disposable;
-import reactor.core.publisher.Mono;
 
 @Service
 public class ShopkeeperServiceImpl implements ShopkeeperService {
@@ -31,12 +30,15 @@ public class ShopkeeperServiceImpl implements ShopkeeperService {
 
 	@Autowired
 	RestTemplate restTemplate;
-	
+
 	@Value("${std-app.url}")
 	private String BASE_URL;
-	
+
 	@Autowired
 	private WebClient webClient;
+
+	@Autowired
+	private ProductClient productClient;
 
 	@Override
 	public ShopKeeper addShopKeeper(ShopKeeperDto dto) {
@@ -62,25 +64,39 @@ public class ShopkeeperServiceImpl implements ShopkeeperService {
 
 	}
 
-//	I. REST communication using RestTemplate
+	// I. REST communication using RestTemplate
 
-//	@Override
-//	public ShopKeeperDto getProductsOfShopkeepr(String id) {
-//		ShopKeeper shopKeeper = getShopKeeperById(id);
-//		ShopKeeperDto dto = modelMapper.map(shopKeeper, ShopKeeperDto.class);
-//		String url = BASE_URL+"product/shopkeeper/" + shopKeeper.getShopKeeperId();
-//		List<ProductResponse> productResponse = restTemplate.getForObject(url, List.class);
-//		dto.setProductResponse(productResponse);
-//		return dto;
-//	}
-	
-//	II. REST Communication using WebClient
+	// @Override
+	// public ShopKeeperDto getProductsOfShopkeepr(String id) {
+	// ShopKeeper shopKeeper = getShopKeeperById(id);
+	// ShopKeeperDto dto = modelMapper.map(shopKeeper, ShopKeeperDto.class);
+	// String url = BASE_URL+"product/shopkeeper/" + shopKeeper.getShopKeeperId();
+	// List<ProductResponse> productResponse = restTemplate.getForObject(url,
+	// List.class);
+	// dto.setProductResponse(productResponse);
+	// return dto;
+	// }
+
+	// II. REST Communication using WebClient
+	// @Override
+	// public ShopKeeperDto getProductsOfShopkeepr(String id) {
+	// ShopKeeper shopKeeper = getShopKeeperById(id);
+	// ShopKeeperDto dto = modelMapper.map(shopKeeper, ShopKeeperDto.class);
+	// String url = BASE_URL + "product/shopkeeper/" + shopKeeper.getShopKeeperId();
+	// List<ProductResponse> dtos =
+	// webClient.get().uri(url).retrieve().bodyToMono(List.class).block();
+	// dto.setProductResponse(dtos);
+	// return dto;
+	// }
+
+	// III. REST Communication using FeignClient
 	@Override
 	public ShopKeeperDto getProductsOfShopkeepr(String id) {
 		ShopKeeper shopKeeper = getShopKeeperById(id);
 		ShopKeeperDto dto = modelMapper.map(shopKeeper, ShopKeeperDto.class);
-		String url = BASE_URL+"product/shopkeeper/" + shopKeeper.getShopKeeperId();
-		List<ProductResponse> dtos = webClient.get().uri(url).retrieve().bodyToMono(List.class).block();
+
+		List<ProductResponse> dtos = (List<ProductResponse>) productClient.getProductByShopkeeperId(id).getBody();
+		
 		dto.setProductResponse(dtos);
 		return dto;
 	}
